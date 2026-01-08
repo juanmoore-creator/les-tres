@@ -18,7 +18,11 @@ export async function fetchCategories() {
 }
 
 export async function fetchProducts() {
-    return await supabaseClient.from('productos').select('*').order('nombre');
+    return await supabaseClient.from('productos').select('*').order('posicion', { ascending: true });
+}
+
+export async function updateProductsOrder(orderedProducts) {
+    return await supabaseClient.from('productos').upsert(orderedProducts);
 }
 
 export async function fetchOffers() {

@@ -4,7 +4,7 @@ import {
     saveProduct, deleteProduct,
     saveCategory, deleteCategory,
     saveOffer, deleteOffer,
-    logout
+    logout, updateProductsOrder
 } from './api.js';
 
 let menuData = [];
@@ -13,15 +13,15 @@ let categoriesData = [];
 
 export async function initAdmin() {
     setupEventListeners();
-    await checkSession();
-    await fetchData();
-    renderAll();
+    await checkSessionAndLoad();
 }
 
-async function checkSession() {
+async function checkSessionAndLoad() {
     const session = await getSession();
     if (!session) {
         document.getElementById('modal-login').classList.add('active');
+        const loader = document.getElementById('loader');
+        if (loader) loader.style.display = 'none';
     } else {
         document.body.classList.add('admin-mode');
         const container = document.getElementById('admin-tools-container');
@@ -35,6 +35,8 @@ async function checkSession() {
             const logoutBtn = document.getElementById('logout-btn');
             if (logoutBtn) logoutBtn.style.display = 'block';
         }
+        await fetchData();
+        renderAll();
     }
 }
 
@@ -67,6 +69,7 @@ function renderAll() {
     renderMenu();
     renderOffers();
     updateCategorySelects();
+    initSortable();
 }
 
 function renderMenu() {
@@ -74,22 +77,28 @@ function renderMenu() {
     if (!container) return;
     container.innerHTML = '';
     categoriesData.forEach(cat => {
+        // Sort products by 'posicion' if available, otherwise by API default (which we changed to position)
+        // Ensure they are sorted just in case client-side sorting is needed, though API does it.
         const prods = menuData.filter(p => p.categoria === cat.nombre);
 
         const catDiv = document.createElement('div');
         catDiv.className = 'category-container';
         catDiv.innerHTML = `
             <div class="category-header">
-                <h2>${cat.nombre} <button class="btn-edit-tool" data-cat-id="${cat.id}">✏️</button></h2>
+                <h2>
+                    ${cat.nombre} 
+                    <button class="btn-edit-tool" data-cat-id="${cat.id}">✏️</button>
+                    <button class="btn-save-order" data-cat-id="${cat.id}" style="display: none; margin-left: 10px; font-size: 0.8em; padding: 2px 8px;">Guardar Orden</button>
+                </h2>
                 <span class="toggle-icon">+</span>
             </div>
-            <div class="category-content">
+            <div class="category-content" id="category-content-${cat.id}">
                 ${prods.length > 0 ? prods.map(item => renderProductRow(item)).join('') : '<p style="padding:20px; color:#666; font-size:13px">Sin productos todavía.</p>'}
             </div>
         `;
 
         catDiv.querySelector('.category-header').addEventListener('click', function (e) {
-            if (e.target.classList.contains('btn-edit-tool')) return;
+            if (e.target.classList.contains('btn-edit-tool') || e.target.classList.contains('btn-save-order')) return;
             this.parentElement.classList.toggle('active');
         });
 
@@ -108,8 +117,9 @@ function renderMenu() {
 function renderProductRow(item) {
     const star = item.es_especial ? `<div class="premium-tag">★ ESPECIAL PREMIUM</div>` : '';
     const stockClass = item.stock ? '' : 'out-of-stock';
+    // Ensure data-id is present for SortableJS
     return `
-        <div class="product-card ${stockClass}" id="prod-${item.id}">
+        <div class="product-card ${stockClass}" id="prod-${item.id}" data-id="${item.id}">
             <div class="product-info">
                 <span class="product-name">${item.nombre}</span>
                 <span class="product-price">$${Number(item.precio).toLocaleString('es-AR')}</span>
@@ -146,6 +156,22 @@ function updateCategorySelects() {
     }
 }
 
+function initSortable() {
+    categoriesData.forEach(cat => {
+        const el = document.getElementById(`category-content-${cat.id}`);
+        if (el) {
+            new Sortable(el, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onUpdate: function (evt) {
+                    const btn = document.querySelector(`.btn-save-order[data-cat-id="${cat.id}"]`);
+                    if (btn) btn.style.display = 'inline-block';
+                }
+            });
+        }
+    });
+}
+
 // Modal Functions relying on globals for simplicity in this refactor step, 
 // or I can attach them to window if HTML calls them, 
 // BUT in current plan HTML doesn't call them directly except via listeners setup here.
@@ -157,9 +183,38 @@ function setupEventListeners() {
     // Delegated listener for products
     const dynamicCats = document.getElementById('dynamic-categories');
     if (dynamicCats) {
-        dynamicCats.addEventListener('click', (e) => {
+        dynamicCats.addEventListener('click', async (e) => {
             if (e.target.classList.contains('btn-edit-tool') && e.target.dataset.prodId) {
                 openEditModal(e.target.dataset.prodId);
+            } else if (e.target.classList.contains('btn-save-order')) {
+                const catId = e.target.dataset.catId;
+                const container = document.getElementById(`category-content-${catId}`);
+                const items = container.querySelectorAll('.product-card');
+                const orderedProducts = [];
+                items.forEach((item, index) => {
+                    orderedProducts.push({
+                        id: item.dataset.id,
+                        posicion: index
+                    });
+                });
+
+                // Show loading state or modify button text
+                const originalText = e.target.innerText;
+                e.target.innerText = 'Guardando...';
+
+                const { error } = await updateProductsOrder(orderedProducts);
+
+                if (error) {
+                    alert('Error al guardar el orden: ' + error.message);
+                    e.target.innerText = originalText;
+                } else {
+                    // Success feedback
+                    e.target.style.display = 'none';
+                    e.target.innerText = originalText;
+                    // Optional: show a toast or small notification
+                    // Since we hide the button, that's enough feedback + maybe a nice alert?
+                    // Let's just follow the task: hide button.
+                }
             }
         });
     }

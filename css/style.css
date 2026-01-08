@@ -399,3 +399,14 @@ body.admin-mode .admin-only {
     color: var(--verde-les3);
     font-weight: 600;
 }
+
+/* Sortable JS Styles */
+.product-card:hover {
+    cursor: move;
+}
+
+.sortable-ghost {
+    opacity: 0.4;
+    background-color: #e0e0e0;
+    border: 2px dashed #999;
+}
