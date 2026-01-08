@@ -25,6 +25,12 @@ export async function updateProductsOrder(orderedProducts) {
     return await supabaseClient.from('productos').upsert(orderedProducts);
 }
 
+export async function updateProductsCategory(oldName, newName) {
+    return await supabaseClient.from('productos')
+        .update({ categoria: newName })
+        .eq('categoria', oldName);
+}
+
 export async function fetchOffers() {
     return await supabaseClient.from('ofertas').select('*').order('created_at', { ascending: false });
 }

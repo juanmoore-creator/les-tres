@@ -4,7 +4,7 @@ import {
     saveProduct, deleteProduct,
     saveCategory, deleteCategory,
     saveOffer, deleteOffer,
-    logout, updateProductsOrder
+    logout, updateProductsOrder, updateProductsCategory
 } from './api.js';
 
 let menuData = [];
@@ -284,15 +284,44 @@ async function handleDeleteProductClick() {
     if (error) alert(error.message); else { closeModals(); await fetchData(); renderAll(); }
 }
 
+
+
 async function handleSaveCatClick() {
     const nombre = document.getElementById('cat-name').value.toLowerCase().trim();
     if (!nombre) return;
-    const payload = { nombre };
+
     const id = document.getElementById('cat-id').value;
+    let oldName = null;
+
+    // Check if renaming
+    if (id) {
+        const cat = categoriesData.find(c => c.id === id);
+        if (cat && cat.nombre !== nombre) {
+            oldName = cat.nombre;
+        }
+    }
+
+    const payload = { nombre };
     if (id) payload.id = id;
 
     const { error } = await saveCategory(payload);
-    if (error) alert(error.message); else { closeModals(); await fetchData(); renderAll(); }
+
+    if (error) {
+        alert(error.message);
+    } else {
+        // If renamed, update products
+        if (oldName) {
+            const { error: prodError } = await updateProductsCategory(oldName, nombre);
+            if (prodError) {
+                console.error("Error updating products category:", prodError);
+                alert("Categoría renombrada, pero hubo un error actualizando los productos.");
+            }
+        }
+
+        closeModals();
+        await fetchData();
+        renderAll();
+    }
 }
 
 async function handleDeleteCatClick() {
