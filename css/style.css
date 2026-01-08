@@ -201,11 +201,11 @@ body {
 }
 
 .offer-card {
-    background: var(--rosa-les3);
+    background: #e9f7ef;
     color: var(--verde-les3);
     padding: 15px 20px;
     border-radius: 16px;
-    font-weight: 700;
+    font-weight: 800;
     font-size: 14px;
     box-shadow: var(--shadow);
     position: relative;
