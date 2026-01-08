@@ -192,10 +192,13 @@ function setupEventListeners() {
                 const items = container.querySelectorAll('.product-card');
                 const orderedProducts = [];
                 items.forEach((item, index) => {
-                    orderedProducts.push({
-                        id: item.dataset.id,
-                        posicion: index
-                    });
+                    const pid = item.dataset.id;
+                    if (pid && pid !== 'undefined') {
+                        orderedProducts.push({
+                            id: pid,
+                            posicion: index
+                        });
+                    }
                 });
 
                 // Show loading state or modify button text

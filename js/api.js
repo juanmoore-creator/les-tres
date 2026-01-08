@@ -22,7 +22,7 @@ export async function fetchProducts() {
 }
 
 export async function updateProductsOrder(orderedProducts) {
-    return await supabaseClient.from('productos').upsert(orderedProducts);
+    return await supabaseClient.from('productos').upsert(orderedProducts, { onConflict: 'id' });
 }
 
 export async function updateProductsCategory(oldName, newName) {
