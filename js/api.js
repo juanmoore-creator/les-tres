@@ -22,7 +22,17 @@ export async function fetchProducts() {
 }
 
 export async function updateProductsOrder(orderedProducts) {
-    return await supabaseClient.from('productos').upsert(orderedProducts, { onConflict: 'id' });
+    // Upsert can trigger INSERT which fails due to not-null constraints on other columns (like nombre).
+    // Uses individual updates to ensure we only MODIFY existing rows.
+    const promises = orderedProducts.map(item =>
+        supabaseClient.from('productos')
+            .update({ posicion: item.posicion })
+            .eq('id', item.id)
+    );
+    const results = await Promise.all(promises);
+    // Return the first error found, if any
+    const error = results.find(r => r.error)?.error;
+    return { error };
 }
 
 export async function updateProductsCategory(oldName, newName) {
