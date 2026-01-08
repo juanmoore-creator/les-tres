@@ -9,6 +9,10 @@ export async function login(email, password) {
     return await supabaseClient.auth.signInWithPassword({ email, password });
 }
 
+export async function logout() {
+    return await supabaseClient.auth.signOut();
+}
+
 export async function fetchCategories() {
     return await supabaseClient.from('categorias').select('*').order('orden');
 }

@@ -3,7 +3,8 @@ import {
     fetchCategories, fetchProducts, fetchOffers,
     saveProduct, deleteProduct,
     saveCategory, deleteCategory,
-    saveOffer, deleteOffer
+    saveOffer, deleteOffer,
+    logout
 } from './api.js';
 
 let menuData = [];
@@ -29,6 +30,10 @@ async function checkSession() {
                 <button class="btn-add-floating" id="btn-add-floating">+</button>
             `;
             document.getElementById('btn-add-floating').addEventListener('click', openSelectorModal);
+
+            // Show logout button
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) logoutBtn.style.display = 'block';
         }
     }
 }
@@ -179,6 +184,14 @@ function setupEventListeners() {
     document.getElementById('btn-new-prod')?.addEventListener('click', () => openEditModal(null));
     document.getElementById('btn-new-cat')?.addEventListener('click', () => openCatModal(null));
     document.getElementById('btn-new-offer')?.addEventListener('click', () => openOfferModal(null));
+
+    // Logout
+    document.getElementById('logout-btn')?.addEventListener('click', handleLogoutClick);
+}
+
+async function handleLogoutClick() {
+    await logout();
+    location.reload();
 }
 
 // Handlers
