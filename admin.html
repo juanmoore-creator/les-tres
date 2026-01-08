@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#144534">
+    <link rel="icon" href="logo_les3.png">
+    <title>Les 3 - Admin</title>
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <header class="app-header">
+        <img src="logo_les3.png" class="header-logo" alt="Logo Les 3">
+        <div class="header-text">
+            <h1>LES 3</h1>
+            <p>Panel de Administración</p>
+        </div>
+    </header>
+
+    <main id="app">
+        <div id="loader">Cargando panel...</div>
+        <div id="menu-content" style="display: none;">
+            <div style="padding: 15px;">
+                <h3>Ofertas Activas</h3>
+                <div id="offers-list" class="offers-section" style="margin: 0;"></div>
+            </div>
+            <div id="dynamic-categories"></div>
+        </div>
+    </main>
+
+    <!-- Herramientas Admin (Inyectadas por JS) -->
+    <div id="admin-tools-container"></div>
+
+    <!-- MODAL LOGIN -->
+    <div class="modal-overlay" id="modal-login">
+        <div class="modal-card">
+            <h3>Panel de Control</h3>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="login-email" class="input-field">
+            </div>
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" id="login-pass" class="input-field">
+            </div>
+            <div class="btn-group">
+                <button class="btn-modal btn-cancel">Cancelar</button>
+                <button class="btn-modal btn-save" id="login-btn-enter">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SELECTOR (+) -->
+    <div class="modal-overlay" id="modal-selector">
+        <div class="modal-card">
+            <h3>¿Qué quieres agregar?</h3>
+            <div class="btn-group-vertical">
+                <button class="btn-select-option" id="btn-new-prod">📦 Nuevo Producto</button>
+                <button class="btn-select-option" id="btn-new-cat">📁 Nueva Categoría</button>
+                <button class="btn-select-option" id="btn-new-offer">📢 Nueva Oferta</button>
+            </div>
+            <div class="btn-group">
+                <button class="btn-modal btn-cancel">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PRODUCTO -->
+    <div class="modal-overlay" id="modal-edit">
+        <div class="modal-card">
+            <h3 id="modal-title">Editar Producto</h3>
+            <input type="hidden" id="edit-id">
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" id="edit-name" class="input-field">
+            </div>
+            <div class="form-group">
+                <label>Precio</label>
+                <input type="number" id="edit-price" class="input-field">
+            </div>
+            <div class="form-group">
+                <label>Categoría</label>
+                <select id="edit-category" class="input-field"></select>
+            </div>
+            <div class="form-group" style="display:flex; gap:10px; align-items:center;">
+                <input type="checkbox" id="edit-stock" checked> <label style="margin:0">En Stock</label>
+                <input type="checkbox" id="edit-special"> <label style="margin:0">Especial</label>
+            </div>
+            <div class="btn-group">
+                <button class="btn-modal btn-delete" id="delete-prod-btn">Borrar</button>
+                <button class="btn-modal btn-cancel">Cerrar</button>
+                <button class="btn-modal btn-save" id="save-prod-btn">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CATEGORÍA -->
+    <div class="modal-overlay" id="modal-cat">
+        <div class="modal-card">
+            <h3 id="cat-modal-title">Nueva Categoría</h3>
+            <input type="hidden" id="cat-id">
+            <div class="form-group">
+                <label>Nombre de la categoría</label>
+                <input type="text" id="cat-name" class="input-field" placeholder="Ej: Bebidas">
+            </div>
+            <div class="btn-group">
+                <button class="btn-modal btn-delete" id="delete-cat-btn">Borrar</button>
+                <button class="btn-modal btn-cancel">Cerrar</button>
+                <button class="btn-modal btn-save" id="save-cat-btn">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL OFERTA -->
+    <div class="modal-overlay" id="modal-offer">
+        <div class="modal-card">
+            <h3 id="offer-modal-title">Nueva Oferta</h3>
+            <input type="hidden" id="offer-id">
+            <div class="form-group">
+                <label>Texto de la oferta</label>
+                <textarea id="offer-text" class="input-field" rows="3"
+                    placeholder="Ej: ¡2 Docenas x $45.000!"></textarea>
+            </div>
+            <div class="form-group" style="display:flex; gap:10px; align-items:center;">
+                <input type="checkbox" id="offer-active" checked> <label style="margin:0">Activa</label>
+            </div>
+            <div class="btn-group">
+                <button class="btn-modal btn-delete" id="delete-offer-btn">Borrar</button>
+                <button class="btn-modal btn-cancel">Cerrar</button>
+                <button class="btn-modal btn-save" id="save-offer-btn">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initAdmin } from './js/admin.js';
+        initAdmin();
+    </script>
+</body>
+
+</html>
