@@ -564,9 +564,17 @@
 
         async function init() {
             setupLoginTrigger();
+            checkAdminRoute();
             await checkSession();
             await fetchData();
             renderAll();
+        }
+
+        function checkAdminRoute() {
+            // Soporta tanto /admin (si el servidor lo permite) como #admin
+            if (window.location.hash === '#admin' || window.location.pathname.endsWith('/admin')) {
+                openLogin();
+            }
         }
 
         function setupLoginTrigger() {
@@ -579,9 +587,10 @@
                     openLogin();
                     clicks = 0;
                 }
-                timer = setTimeout(() => { clicks = 0; }, 500);
             });
         }
+
+        window.addEventListener('hashchange', checkAdminRoute);
 
         async function checkSession() {
             const { data: { session } } = await supabaseClient.auth.getSession();
